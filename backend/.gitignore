@@ -1,0 +1,8 @@
+.idea/
+.vscode/
+config/.env.ini
+
+# Npm - build files (leading slash):
+package-lock.json
+node_modules/*
+dist/*

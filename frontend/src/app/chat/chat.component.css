@@ -1,0 +1,106 @@
+/* app-chat.component.css */
+
+:host {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-container{
+  overflow:hidden;
+}
+
+.chat-container{
+  padding: 10px 10px 0px 10px;
+}
+
+.chat-messages-container{
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-end;
+}
+
+.chat-messages{
+  height:100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+}
+
+.messages-container{
+  width: 100%;
+  max-height: 100%;
+}
+
+.my-message, .other-user-message {
+  display: flex;
+  align-items: flex-start;
+}
+
+.my-message .timestamp,
+.other-user-message .timestamp,
+.message-with-avatar .avatar-container{
+  width: 75px;
+}
+
+.message-content{
+  border-radius: 5px;
+  margin-right: 10px;
+  max-width: 90%;
+  word-wrap: break-word;
+  position: relative;
+}
+
+/* Style for messages with avatars */
+.message-with-avatar {
+  display: flex;
+  align-items: flex-start;
+  transition: background-color 0.3s ease; /* Add transition for hover effect */
+}
+
+.message-with-avatar:hover {
+  background-color: #36393f; /* Darken the container on hover */
+}
+
+.avatar {
+  margin-right: 10px;
+}
+
+.username {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.timestamp {
+  font-size: 0.8em;
+  margin-top: -2px; /* Adjust the spacing as needed */
+}
+
+/* Style for messages without avatars */
+.other-user-message,
+.my-message {
+  margin-bottom: 8px;
+  transition: background-color 0.3s ease; /* Add transition for hover effect */
+}
+
+.other-user-message:hover,
+.my-message:hover {
+  background-color: #36393f; /* Darken the container on hover */
+}
+
+.timestamp {
+  font-size: 0.8em;
+  margin-top: -2px; /* Adjust the spacing as needed */
+  opacity: 0; /* Hide timestamp by default */
+  transition: opacity 0.3s ease; /* Add transition for opacity */
+}
+
+.other-user-message:hover .timestamp,
+.my-message:hover .timestamp {
+  opacity: 1; /* Show timestamp on hover */
+}

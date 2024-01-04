@@ -1,0 +1,8 @@
+<div class="app-container">
+  <app-preloader *ngIf="authService.loading$ | async"></app-preloader>
+  <app-header *ngIf="authService.isLoggedIn()"></app-header>
+  <div class="content-container">
+    <app-auth *ngIf="!authService.isLoggedIn()"></app-auth>
+    <app-chat *ngIf="authService.isLoggedIn()"></app-chat>
+  </div>
+</div>
