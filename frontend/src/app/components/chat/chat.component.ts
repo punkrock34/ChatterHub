@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../auth.service';
-import { MessagesService } from '../messages.service';
+import { AuthService } from '../../services/auth/auth.service';
+import { MessagesService } from '../../services/messages/messages.service';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -14,7 +14,6 @@ export class ChatComponent{
   messagesList$ = this.messagesListSubject.asObservable();
 
   constructor(public authService: AuthService, public messagesService: MessagesService) {
-    this.currentUserUid = this.authService.getUser().uid;
     this.messagesListSubject.next(messagesService.getMessages());
   }
 

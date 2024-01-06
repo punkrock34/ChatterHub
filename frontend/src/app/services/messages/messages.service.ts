@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { AuthService } from './auth.service';
+import { Auth } from '@angular/fire/auth';
 
 export interface Message {
   uid: any;
   displayName: string;
+  photoURL: string | null;
   timestamp: any;
   message: string;
   showAvatar: boolean | null;
@@ -18,10 +19,11 @@ export class MessagesService {
   messages: Message[] = [];
   newMessage: string = '';
 
-  constructor(private authService: AuthService) {
+  constructor(private auth: Auth) {
     this.messages.push({
       uid: 1234,
       displayName: 'John Doe',
+      photoURL: null,
       timestamp: Date.now(),
       message: 'Hello, how are you?',
       showAvatar: null,
@@ -30,6 +32,7 @@ export class MessagesService {
     this.messages.push({
       uid: 5678,
       displayName: 'Jane Doe',
+      photoURL: null,
       timestamp: Date.now(),
       message: 'I am fine, thank you.',
       showAvatar: null,
@@ -38,6 +41,7 @@ export class MessagesService {
     this.messages.push({
       uid: 1234,
       displayName: 'John Doe',
+      photoURL: null,
       timestamp: Date.now(),
       message: 'That is great to hear!',
       showAvatar: null,
@@ -46,6 +50,7 @@ export class MessagesService {
     this.messages.push({
       uid: 1234,
       displayName: 'John Doe',
+      photoURL: null,
       timestamp: Date.now(),
       message: 'How is the weather today?',
       showAvatar: null,
@@ -61,7 +66,10 @@ export class MessagesService {
       return;
     }
 
-    const user = this.authService.getUser();
+    const user = this.auth.currentUser;
+    if (!user) {
+      return;
+    }
 
     const uid = user.uid;
     const displayName = user.displayName;
@@ -74,7 +82,8 @@ export class MessagesService {
     this.messages.push({
       uid,
       displayName: displayName || 'Anonymous',
-      timestamp,
+      photoURL: user.photoURL,
+      timestamp:timestamp,
       message: newMessage,
       showAvatar,
       showTimestamp,

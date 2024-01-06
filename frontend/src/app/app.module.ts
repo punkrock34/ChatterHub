@@ -3,18 +3,28 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HeaderComponent } from './header/header.component';
-import { AuthComponent } from './auth/auth.component';
-import { ChatComponent } from './chat/chat.component';
+import { HeaderComponent } from './components/header/header.component';
+import { AuthComponent } from './components/auth/auth.component';
+import { ChatComponent } from './components/chat/chat.component';
 
 import { HttpClientModule } from '@angular/common/http';
-import { AuthService } from './auth.service';
-import { MessagesService } from './messages.service';
+import { AuthService } from './services/auth/auth.service';
+import { MessagesService } from './services/messages/messages.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { FormsModule } from '@angular/forms';
-import { PreloaderComponent } from './preloader/preloader.component';
-import { TimestampFormatPipe } from './timestamp-format.pipe';
+import { PreloaderComponent } from './components/preloader/preloader.component';
+import { TimestampFormatPipe } from './pipes/timestamp-format.pipe';
+
+//import firebase ng
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { getAuth, provideAuth } from '@angular/fire/auth';
+
+import { environment } from '../environments/environment';
+import { AuthFormComponent } from './components/auth-form/auth-form';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -24,6 +34,7 @@ import { TimestampFormatPipe } from './timestamp-format.pipe';
     ChatComponent,
     PreloaderComponent,
     TimestampFormatPipe,
+    AuthFormComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
@@ -31,7 +42,11 @@ import { TimestampFormatPipe } from './timestamp-format.pipe';
     AppRoutingModule,
     HttpClientModule,
     NgbModule,
-    FormsModule
+    FormsModule,
+    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+    provideAuth(() => getAuth()),
+    FontAwesomeModule,
+    ReactiveFormsModule
   ],
   providers: [AuthService, MessagesService],
   bootstrap: [AppComponent]

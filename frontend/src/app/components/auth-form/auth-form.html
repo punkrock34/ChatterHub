@@ -1,0 +1,50 @@
+<!-- auth-form.component.html -->
+<form (ngSubmit)="authService.loginOrRegister(authForm)" [formGroup]="authForm" class="authentication-form">
+
+  <div class="form-group mb-3">
+    <label for="email" class="text-white">Email Address</label>
+    <input type="email" formControlName="email" id="email" class="form-control">
+    <!-- Display error message if email is not valid -->
+    <div *ngIf="authForm.get('email')?.invalid && (authForm.get('email')?.dirty || authForm.get('email')?.touched)" class="text-danger">
+      Please enter a valid email address.
+    </div>
+  </div>
+
+  <div class="form-group mb-5">
+    <div class="input-group" style="position: relative;">
+      <input
+        formControlName="password"
+        type="{{ showPassword ? 'text' : 'password' }}"
+        name="password"
+        id="password"
+        class="form-control"
+        required
+        [ngClass]="{ 'is-invalid': authForm.get('password')?.invalid && (authForm.get('password')?.dirty || authForm.get('password')?.touched) }"
+        [attr.minlength]="8"
+        [attr.maxlength]="30"
+        style="padding-right: 40px;"
+      />
+      <div class="input-group-append" style="position: absolute; top: 0; right: 0; bottom: 0; display: flex; align-items: center; background:transparent;">
+        <button type="button" (click)="showPassword = !showPassword" style="background:transparent; border: none; outline: none; cursor: pointer; z-index: 100; color: #000;">
+          <fa-icon [icon]="showPassword ? faEye : faEyeSlash"></fa-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Display error message if password is not valid -->
+    <div class="text-danger">
+      <div *ngIf="authForm.get('password')?.hasError('required')">
+        Please enter a password.
+      </div>
+      <div *ngIf="authForm.get('password')?.hasError('minlength')">
+        Password must be at least 8 characters long.
+      </div>
+      <div *ngIf="authForm.get('password')?.hasError('pattern')">
+        Password must contain at least one lowercase letter, one uppercase letter, and one number.
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit button -->
+  <button type="submit" class="btn bg-white w-100" [disabled]="authForm.invalid">Sign in or Sign up</button>
+</form>

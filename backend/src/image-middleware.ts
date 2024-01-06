@@ -4,14 +4,16 @@ import { promises as fs } from 'fs';
 import sharp from "sharp";
 
 const imageMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    console.log('Image Middleware Executed:', req.path);
+    
     // Check if the requested resource is an image
     if (!/\.(jpe?g|png)$/i.test(req.path)) {
         next();
         return;
     }
 
-    const imagePath = path.join('public', req.path);
-    const cachePath = path.join('public', req.path + '.webp');
+    const imagePath = path.join(__dirname, "..", req.path);
+    const cachePath = path.join(__dirname, "..", req.path + '.webp');
 
     try {
         // Check if the converted image exists in the cache

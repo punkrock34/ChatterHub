@@ -16,7 +16,7 @@
         </div>
         <div *ngIf="message.showAvatar" class="message-with-avatar">
           <div class="avatar-container">
-            <img src="favicon.ico" width="30" height="30" class="avatar" alt="">
+            <img src="{{ message.photoURL }}" width="30" height="30" class="avatar" alt="">
           </div>
           <div class="message-content">
             <div class = "message-header">
