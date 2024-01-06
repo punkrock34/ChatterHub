@@ -23,12 +23,6 @@ app.use(imageMiddleware);
 // Serve static files first
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
-// Other routes or middleware...
-app.use('/', (req, res) => {
-    res.status(418).send("I'm a teapot");
-});
-
-
 app.use('/api/download-image', async (req, res) => {
     try {
         const { url } = req.query;
@@ -63,6 +57,10 @@ app.use('/api/download-image', async (req, res) => {
     }
 });
 
+// Other routes or middleware...
+app.use('/', (req, res) => {
+    res.status(418).send("I'm a teapot");
+});
 
 // Start the server
 const PORT = process.env.APP_PORT || 3000;

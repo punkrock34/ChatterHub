@@ -1,5 +1,5 @@
 <!-- auth-form.component.html -->
-<form (ngSubmit)="authService.loginOrRegister(authForm)" [formGroup]="authForm" class="authentication-form">
+<form (ngSubmit)="onSubmit()" [formGroup]="authForm" class="authentication-form">
 
   <div class="form-group mb-3">
     <label for="email" class="text-white">Email Address</label>
@@ -23,6 +23,8 @@
         [attr.minlength]="8"
         [attr.maxlength]="30"
         style="padding-right: 40px;"
+        readonly
+        onfocus="this.removeAttribute('readonly');"
       />
       <div class="input-group-append" style="position: absolute; top: 0; right: 0; bottom: 0; display: flex; align-items: center; background:transparent;">
         <button type="button" (click)="showPassword = !showPassword" style="background:transparent; border: none; outline: none; cursor: pointer; z-index: 100; color: #000;">
@@ -33,7 +35,7 @@
 
     <!-- Display error message if password is not valid -->
     <div class="text-danger">
-      <div *ngIf="authForm.get('password')?.hasError('required')">
+      <div *ngIf="authForm.get('password')?.invalid && (authForm.get('password')?.dirty || authForm.get('password')?.touched) && !authForm.get('password')?.hasError('minlength') && !authForm.get('password')?.hasError('pattern')">
         Please enter a password.
       </div>
       <div *ngIf="authForm.get('password')?.hasError('minlength')">
@@ -45,6 +47,15 @@
     </div>
   </div>
 
-  <!-- Submit button -->
-  <button type="submit" class="btn bg-white w-100" [disabled]="authForm.invalid">Sign in or Sign up</button>
+  <div *ngIf="!showSpinner">
+    <!-- Submit button -->
+    <button type="submit" class="btn bg-white w-100 text-black" [disabled]="authForm.invalid">Sign in or Sign up</button>
+  </div>
+
+  <div *ngIf="showSpinner">
+    <!-- Button with mat-spinner -->
+    <button type="button" class="btn bg-white w-100 text-black d-flex justify-content-center align-items-center">
+      <mat-spinner diameter="20" color="primary"></mat-spinner>
+    </button>
+  </div>
 </form>

@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { FormGroup } from '@angular/forms';
-import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from '@angular/fire/auth';
+import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, sendEmailVerification, onAuthStateChanged } from '@angular/fire/auth';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'root',
@@ -15,68 +16,48 @@ export class AuthService {
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   loading$ = this.loadingSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private snackBar: MatSnackBar) {
     this.checkAuth()
   }
 
-  private async checkAuth(): Promise<void> {
-    // Set loading to true before making the request
-    this.loadingSubject.next(true);
 
-    //try to get user from firebase auth
-    try{
-      const user = this.auth.currentUser;
+
+  private async checkAuth(): Promise<void> {
+
+    onAuthStateChanged(this.auth, (user) => {
       this.isLoggedInSubject.next((user) ? true : false);
-    }
-    catch(err){
-      this.isLoggedInSubject.next(false);
-    }
-    finally{
       this.loadingSubject.next(false);
-    }
+    });
+
   }
 
   async loginOrRegister(form: FormGroup): Promise<void> {
     try {
-      this.loadingSubject.next(true);
-
       const { email, password } = form.value;
 
       try {
         // Attempt to sign in
         await signInWithEmailAndPassword(this.auth, email, password);
         this.isLoggedInSubject.next(true);
-        console.log(this.auth.currentUser);
       } catch (signInError: any) {
         if (signInError.code === 'auth/invalid-credential') {
-
-          try{
-            // Attempt to register
             await this.registerUser(email, password);
-          }catch(registerError: any){
-            if(registerError.code === 'auth/email-already-in-use'){
-              console.error('Invalid credentials. Please try again.');
-            }else{
-              console.error('Unexpected error:', registerError);
-            }
-          }
-
         } else {
           console.error('Error signing in:', signInError);
+          this.snackBar.open('Error signing in. Please try again.', 'Close', { duration: 5000 });
         }
-      } finally {
-        this.loadingSubject.next(false);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
-    } finally {
-      this.loadingSubject.next(false);
+      this.snackBar.open('Unexpected error. Please try again.', 'Close', { duration: 5000 });
     }
   }
 
   private async registerUser(email: string, password: string): Promise<void> {
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+      console.log('User registered:', userCredential.user.uid);
+
       const user = userCredential.user;
 
       const photoUrl = await this.downloadProfilePicture(email);
@@ -87,10 +68,22 @@ export class AuthService {
         photoURL: photoUrl
       });
 
-      console.log('Profile updated successfully!');
+      console.log('Profile updated:', user.displayName, user.photoURL);
+
+      if (!user.emailVerified) {
+        await sendEmailVerification(user);
+        console.log('Verification email sent.');
+      }
+
       this.isLoggedInSubject.next(true);
-    } catch (registrationError) {
-      console.error('Error registering user:', registrationError);
+    } catch (registrationError: any) {
+      if(registrationError.code === 'auth/email-already-in-use'){
+        console.log("Username or password is incorrect!");
+        this.snackBar.open('Username or password is incorrect!', 'Close', { duration: 5000 });
+      }else{
+        console.error('Error registering user:', registrationError);
+        this.snackBar.open('Error registering user. Please try again.', 'Close', { duration: 5000 });
+      }
     }
   }
 
@@ -114,10 +107,8 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
-    this.loadingSubject.next(true);
     await signOut(this.auth);
     this.isLoggedInSubject.next(false);
-    this.loadingSubject.next(false);
   }
 
   isLoggedIn(): boolean {

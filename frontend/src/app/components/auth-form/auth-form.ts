@@ -19,15 +19,17 @@ export class AuthFormComponent implements OnInit {
   // Hide or show password
   showPassword = false;
 
+  // Show or hide spinner
+  showSpinner = false;
+
   constructor(public authService: AuthService) { }
 
   ngOnInit(): void {
-    // Initialize the form
     this.initForm();
   }
 
   // Initialize the form
-  initForm(): void {
+  private initForm(): void {
     this.authForm = new FormGroup({
       email: new FormControl('', [Validators.required, Validators.email]),
       password: new FormControl('', [Validators.required, this.passwordValidator()])
@@ -47,9 +49,8 @@ export class AuthFormComponent implements OnInit {
         return { minlength: true };
       }
 
-      // Add your custom password pattern validation logic here
-      // For example, using a regular expression
-      const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,30}$/;
+      // Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character
+      const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$/;
 
       if (!passwordPattern.test(value)) {
         return { pattern: true };
@@ -57,5 +58,12 @@ export class AuthFormComponent implements OnInit {
 
       return null; // Password is valid
     };
+  }
+
+  onSubmit(): void {
+    this.showSpinner = true;
+    this.authService.loginOrRegister(this.authForm).finally(() => {
+      this.showSpinner = false;
+    });
   }
 }

@@ -1,5 +1,4 @@
-<div class="app-container">
-  <app-preloader *ngIf="authService.loading$ | async"></app-preloader>
+<div class="app-container" *ngIf="!(authService.loading$ | async)">
   <app-header *ngIf="authService.isLoggedIn()"></app-header>
   <div class="content-container">
     <app-auth *ngIf="!authService.isLoggedIn()"></app-auth>

@@ -20,42 +20,7 @@ export class MessagesService {
   newMessage: string = '';
 
   constructor(private auth: Auth) {
-    this.messages.push({
-      uid: 1234,
-      displayName: 'John Doe',
-      photoURL: null,
-      timestamp: Date.now(),
-      message: 'Hello, how are you?',
-      showAvatar: null,
-      showTimestamp: null,
-    });
-    this.messages.push({
-      uid: 5678,
-      displayName: 'Jane Doe',
-      photoURL: null,
-      timestamp: Date.now(),
-      message: 'I am fine, thank you.',
-      showAvatar: null,
-      showTimestamp: null,
-    });
-    this.messages.push({
-      uid: 1234,
-      displayName: 'John Doe',
-      photoURL: null,
-      timestamp: Date.now(),
-      message: 'That is great to hear!',
-      showAvatar: null,
-      showTimestamp: null,
-    });
-    this.messages.push({
-      uid: 1234,
-      displayName: 'John Doe',
-      photoURL: null,
-      timestamp: Date.now(),
-      message: 'How is the weather today?',
-      showAvatar: null,
-      showTimestamp: null,
-    })
+    this.messages = [];
   }
 
   sendMessage(form: NgForm): void {
@@ -76,17 +41,17 @@ export class MessagesService {
 
     const lastMessage = this.messages[this.messages.length - 1];
     const timestamp = Date.now();
-    const showAvatar = uid !== lastMessage.uid || timestamp - lastMessage.timestamp > 300000;
+    const showAvatar = uid !== lastMessage?.uid || timestamp - lastMessage?.timestamp > 300000;
     const showTimestamp = !showAvatar;
 
     this.messages.push({
-      uid,
+      uid: uid,
       displayName: displayName || 'Anonymous',
       photoURL: user.photoURL,
       timestamp:timestamp,
       message: newMessage,
-      showAvatar,
-      showTimestamp,
+      showAvatar: showAvatar,
+      showTimestamp: showTimestamp,
     });
   }
 

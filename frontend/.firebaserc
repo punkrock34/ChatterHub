@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "chatterhub-d5905": {
+      "hosting": {
+        "frontend": [
+          "chatterhub-d5905"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "chatterhub-d5905"
+  }
+}
