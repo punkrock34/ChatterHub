@@ -30,6 +30,9 @@ module.exports = {
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'dist'),
     },
+    watchOptions: {
+        ignored: ['node_modules/**', 'dist/**', 'config/**', 'db/**'],
+    },
     plugins: [
         new Dotenv({
             path: './config/.env.ini',
@@ -42,11 +45,10 @@ module.exports = {
         new WebpackShellPluginNext({
             onBuildStart: {
                 scripts: ['echo "===> Starting packing with WEBPACK 5"'],
-                blocking: true,
+                blocking: false,
                 parallel: false
             },
             onBuildEnd: {
-                // After webpack finishes bundling, copy the file using shelljs
                 scripts: ['clear && npm run start'],
                 blocking: false,
                 parallel: true
