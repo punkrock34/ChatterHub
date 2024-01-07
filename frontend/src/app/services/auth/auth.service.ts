@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, sendEmailVerification, onAuthStateChanged } from '@angular/fire/auth';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { GeneralService } from '../general/general.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +16,7 @@ export class AuthService {
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   loading$ = this.loadingSubject.asObservable();
 
-  constructor(private http: HttpClient, private snackBar: MatSnackBar) {
+  constructor(private generalService: GeneralService, private snackBar: MatSnackBar) {
     this.checkAuth()
   }
 
@@ -60,7 +60,7 @@ export class AuthService {
 
       const user = userCredential.user;
 
-      const photoUrl = await this.downloadProfilePicture(email);
+      const photoUrl = await this.generalService.downloadProfilePicture(email);
       const displayName = this.generateDisplayName(email);
 
       await updateProfile(user, {
@@ -92,18 +92,6 @@ export class AuthService {
     displayName = displayName.replace(/[\W_]+/g, ' ');
     displayName = displayName.replace(/\w\S*/g, (w: string) => w.replace(/^\w/, (c: string) => c.toUpperCase()));
     return displayName;
-  }
-
-  private async downloadProfilePicture(email: string): Promise<string> {
-    const photoUrl = 'https://www.gravatar.com/avatar/' + email + '?d=identicon';
-
-    try {
-      const res: any = await this.http.get("/api/download-image", { params: { url: photoUrl } }).toPromise();
-      return res.imagePath || '';
-    } catch (error) {
-      console.error('Error downloading profile picture:', error);
-      return '';
-    }
   }
 
   async logout(): Promise<void> {

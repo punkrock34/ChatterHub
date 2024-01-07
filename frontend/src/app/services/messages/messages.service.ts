@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Auth } from '@angular/fire/auth';
+import { Auth, updateProfile } from '@angular/fire/auth';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
+import { GeneralService } from '../general/general.service';
+import { from } from 'rxjs';
 
 export interface Message {
   uid: any;
@@ -19,11 +22,16 @@ export class MessagesService {
   messages: Message[] = [];
   newMessage: string = '';
 
-  constructor(private auth: Auth) {
-    this.messages = [];
+  faUser = faUser;
+
+  constructor(private generalService: GeneralService, private auth: Auth) {
+    from(this.generalService.getMessages(0, 100)).subscribe((messages: Message[]) => {
+      this.messages = messages;
+      console.log('Messages:', this.messages);
+    });
   }
 
-  sendMessage(form: NgForm): void {
+  async sendMessage(form: NgForm): Promise<void> {
     let { newMessage } = form.value;
     form.reset();
     newMessage = newMessage.trim();
@@ -38,21 +46,36 @@ export class MessagesService {
 
     const uid = user.uid;
     const displayName = user.displayName;
+    let photoURL = user.photoURL || null;
+
+    try {
+      const res: boolean = await this.generalService.checkImageExists(user.photoURL);
+      if (!res) {
+        photoURL = await this.generalService.downloadProfilePicture(user.email || null);
+        await updateProfile(user, { photoURL: photoURL });
+      }
+    } catch (error) {
+      console.error('Error updating profile picture:', error);
+    }
 
     const lastMessage = this.messages[this.messages.length - 1];
     const timestamp = Date.now();
     const showAvatar = uid !== lastMessage?.uid || timestamp - lastMessage?.timestamp > 300000;
     const showTimestamp = !showAvatar;
 
-    this.messages.push({
+    var message = {
       uid: uid,
       displayName: displayName || 'Anonymous',
-      photoURL: user.photoURL,
-      timestamp:timestamp,
+      photoURL: photoURL || null,
+      timestamp: timestamp,
       message: newMessage,
       showAvatar: showAvatar,
       showTimestamp: showTimestamp,
-    });
+    };
+
+    this.messages.push(message);
+
+    this.generalService.sendMessage(message);
   }
 
   getMessages(): Message[] {
