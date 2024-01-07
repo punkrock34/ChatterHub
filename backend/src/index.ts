@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { getConnection } from './database-config';
 import { redisClient as rd } from './redis-config';
+import { BindParameters } from 'oracledb';
 
 const app: Express = express();
 
@@ -81,20 +82,24 @@ app.use('/api/check-image-exists', (req, res) => {
 app.use('/api/send-message', async (req, res) => {
     try {
         const { uid, displayName, photoURL, timestamp, message, showAvatar, showTimestamp } = req.body;
-        if (!uid || !displayName || !photoURL || !timestamp || !message || !showAvatar || !showTimestamp) {
-            throw new Error('Missing required parameters.');
-        }
 
-        const query = `INSERT INTO MESSAGES( USER_ID, MESSAGE, DISPLAY_NAME, PHOTO_URL, SHOW_AVATAR, SHOW_TIMESTAMP, CREATED_AT ) VALUES( :uid, :message, :displayName, :photoURL, :showAvatar, :showTimestamp, :timestamp )`;
-        const binds = { uid, displayName, photoURL, timestamp, message, showAvatar, showTimestamp };
+        //convert the booleans to numbers
+        const showAvatarNumber = showAvatar ? 1 : 0;
+        const showTimestampNumber = showTimestamp ? 1 : 0;
+        const timestampString = new Date(timestamp).toISOString();
+
+        const query = `INSERT INTO messages( USER_ID, MESSAGE, DISPLAY_NAME, PHOTO_URL, SHOW_AVATAR, SHOW_TIMESTAMP, CREATED_AT ) VALUES( :USER_ID, :MESSAGE, :DISPLAY_NAME, :PHOTO_URL, :SHOW_AVATAR, :SHOW_TIMESTAMP, TO_TIMESTAMP(:CREATED_AT, 'YYYY-MM-DD"T"HH24:MI:SS.FF3"Z"') )`;
+        const binds = { USER_ID: uid, MESSAGE: message, DISPLAY_NAME: displayName, PHOTO_URL: photoURL, SHOW_AVATAR: showAvatarNumber, SHOW_TIMESTAMP: showTimestampNumber, CREATED_AT: timestampString };
         const options = { autoCommit: true };
 
         await dbConnection.execute(query, binds, options);
 
         //save in redis as well
+        await redisClient.connect();
         const key = `messages:${uid}`;
         const value = JSON.stringify({ uid, displayName, photoURL, timestamp, message, showAvatar, showTimestamp });
         redisClient.lPush(key, value);
+        await redisClient.quit();
 
     } catch (error) {
         console.error(error.message || error);
@@ -110,19 +115,32 @@ app.use('/api/get-messages', async (req, res) => {
         }
 
         // first try to get from redis cache
+        await redisClient.connect();
         const key = `messages:${start}:${end}`;
         const messages = await redisClient.lRange(key, 0, -1);
         if (messages.length > 0) {
             res.json({ messages });
             return;
         }
+        await redisClient.quit();
 
         // if not found in cache, get from db
-        const query = `SELECT * FROM ( SELECT * FROM MESSAGES ORDER BY CREATED_AT DESC ) WHERE ROWNUM >= :start AND ROWNUM <= :end ORDER BY CREATED_AT ASC`;
-        const binds = { start: Number(start), end: Number(end) }; // Convert start and end to numbers
-        const options = { outFormat: 4002 };
+        const query = `
+            SELECT *
+            FROM (
+                SELECT m.*, ROWNUM AS RN
+                FROM (
+                  SELECT *
+                    FROM messages
+                    ORDER BY CREATED_AT DESC
+                ) m
+                WHERE ROWNUM <= :END_COUNT
+            )
+            WHERE RN >= :START_COUNT`;
 
-        // save these messages in redis cache
+        const binds: BindParameters = { START_COUNT: Number(start), END_COUNT: Number(end) };
+        const options = { outFormat: 4002 };
+                
         const result = await dbConnection.execute(query, binds, options);
         const messagesFromDb = result.rows;
 
@@ -131,11 +149,28 @@ app.use('/api/get-messages', async (req, res) => {
             return;
         }
 
+        for(let i = 0; i < messagesFromDb.length; i++) {
+            const message:any = messagesFromDb[i];
+            const newMessage: any = {
+                uid: message.USER_ID,
+                displayName: message.DISPLAY_NAME,
+                photoURL: message.PHOTO_URL,
+                timestamp: message.CREATED_AT.getTime(),
+                message: message.MESSAGE,
+                showAvatar: message.SHOW_AVATAR === 1,
+                showTimestamp: message.SHOW_TIMESTAMP === 1,
+            };
+
+            messagesFromDb[i] = newMessage;
+        }
+        
+        await redisClient.connect();
         messagesFromDb.forEach((message: any) => {
             const key = `messages:${start}:${end}`;
             const value = JSON.stringify(message);
             redisClient.lPush(key, value);
         });
+        await redisClient.quit();
 
         res.json({ messages: messagesFromDb });
     } catch (error) {
