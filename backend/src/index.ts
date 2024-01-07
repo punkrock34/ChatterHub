@@ -11,7 +11,7 @@ import { BindParameters } from 'oracledb';
 const app: Express = express();
 
 const dbConnection = await getConnection();
-const redisClient = rd;
+const redisClient = await rd.connect();
 
 const uploadsDirectory = './uploads';
 if (!fs.existsSync(uploadsDirectory)) {
@@ -95,11 +95,9 @@ app.use('/api/send-message', async (req, res) => {
         await dbConnection.execute(query, binds, options);
 
         //save in redis as well
-        await redisClient.connect();
         const key = `messages:${uid}`;
         const value = JSON.stringify({ uid, displayName, photoURL, timestamp, message, showAvatar, showTimestamp });
         redisClient.lPush(key, value);
-        await redisClient.quit();
 
     } catch (error) {
         console.error(error.message || error);
@@ -115,14 +113,12 @@ app.use('/api/get-messages', async (req, res) => {
         }
 
         // first try to get from redis cache
-        await redisClient.connect();
         const key = `messages:${start}:${end}`;
         const messages = await redisClient.lRange(key, 0, -1);
         if (messages.length > 0) {
             res.json({ messages });
             return;
         }
-        await redisClient.quit();
 
         // if not found in cache, get from db
         const query = `
@@ -164,13 +160,11 @@ app.use('/api/get-messages', async (req, res) => {
             messagesFromDb[i] = newMessage;
         }
         
-        await redisClient.connect();
         messagesFromDb.forEach((message: any) => {
             const key = `messages:${start}:${end}`;
             const value = JSON.stringify(message);
             redisClient.lPush(key, value);
         });
-        await redisClient.quit();
 
         res.json({ messages: messagesFromDb });
     } catch (error) {
