@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
-import { Message } from '../messages/messages.service';
+import { Message } from '../../interfaces/message';
 
 @Injectable({
   providedIn: 'root'
@@ -42,7 +42,6 @@ export class GeneralService {
 
   async sendMessage(message: Message): Promise<void> {
     try {
-      console.log('Sending message:', message);
       await lastValueFrom(this.http.post("/api/send-message", message));
     } catch (error) {
       console.error('Error sending message:', error);

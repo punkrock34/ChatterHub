@@ -11,7 +11,3 @@ services:
       - ORACLE_PDB=chatterhub
       - ORACLE_PASSWORD=olDXgfmHPkOyRiqZEJKjKLPTDX0S20
       - ORACLE_CHARACTERSET=AL32UTF8
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"

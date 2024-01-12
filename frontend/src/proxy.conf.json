@@ -6,5 +6,10 @@
   "/uploads": {
     "target": "http://localhost:3000",
     "secure": false
+  },
+  "/ws": {
+    "target": "ws://localhost:3001",
+    "secure": false,
+    "ws": true
   }
 }

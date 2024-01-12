@@ -16,7 +16,7 @@
         </div>
         <div *ngIf="message.showAvatar" class="message-with-avatar">
           <div class="avatar-container">
-            <img src="{{ message.photoURL }}" width="30" height="30" class="avatar" alt="" *ngIf="message.PhotoURL !== null">
+            <img src="{{ message.photoURL }}" width="30" height="30" class="avatar" alt="" *ngIf="message.photoURL !== null">
             <fa-icon [icon]="faUser" class="avatar" *ngIf="message.photoURL === null"></fa-icon>
           </div>
           <div class="message-content">
@@ -33,8 +33,8 @@
 </div>
 
 <div class="input-container">
-  <form (ngSubmit)="messagesService.sendMessage(form)" class="input-group" #form="ngForm" id="form">
-    <input type="text" [(ngModel)]="messagesService.newMessage" name="newMessage" class="form-control" placeholder="Type your message here..." required>
+  <form (ngSubmit)="sendMessage(form)" class="input-group" #form="ngForm" id="form">
+    <input type="text" [(ngModel)]="newMessage" name="newMessage" class="form-control" placeholder="Type your message here..." required>
     <div class="input-group-append">
       <button type="submit" class="btn btn-primary">Send</button>
     </div>

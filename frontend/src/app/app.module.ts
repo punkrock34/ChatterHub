@@ -9,11 +9,10 @@ import { ChatComponent } from './components/chat/chat.component';
 
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth/auth.service';
-import { MessagesService } from './services/messages/messages.service';
+import { GeneralService } from './services/general/general.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { FormsModule } from '@angular/forms';
-import { PreloaderComponent } from './components/preloader/preloader.component';
 import { TimestampFormatPipe } from './pipes/timestamp-format.pipe';
 
 //import firebase ng
@@ -36,7 +35,6 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     HeaderComponent,
     AuthComponent,
     ChatComponent,
-    PreloaderComponent,
     TimestampFormatPipe,
     AuthFormComponent,
   ],
@@ -55,7 +53,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     MatProgressSpinnerModule,
     MatSnackBarModule
   ],
-  providers: [AuthService, MessagesService],
+  providers: [AuthService, GeneralService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

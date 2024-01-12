@@ -70,10 +70,9 @@ export class AuthService {
 
       console.log('Profile updated:', user.displayName, user.photoURL);
 
-      if (!user.emailVerified) {
-        await sendEmailVerification(user);
-        console.log('Verification email sent.');
-      }
+      await sendEmailVerification(user);
+      console.log('Verification email sent.');
+
 
       this.isLoggedInSubject.next(true);
     } catch (registrationError: any) {
