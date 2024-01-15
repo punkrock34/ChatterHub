@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, sendEmailVerification, onAuthStateChanged } from '@angular/fire/auth';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { GeneralService } from '../general/general.service';
+import { ImagesService } from '../images/images.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,11 +16,9 @@ export class AuthService {
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   loading$ = this.loadingSubject.asObservable();
 
-  constructor(private generalService: GeneralService, private snackBar: MatSnackBar) {
+  constructor(private imagesService: ImagesService, private snackBar: MatSnackBar) {
     this.checkAuth()
   }
-
-
 
   private async checkAuth(): Promise<void> {
 
@@ -60,7 +58,7 @@ export class AuthService {
 
       const user = userCredential.user;
 
-      const photoUrl = await this.generalService.downloadProfilePicture(email);
+      const photoUrl = await this.imagesService.downloadProfilePicture(email);
       const displayName = this.generateDisplayName(email);
 
       await updateProfile(user, {

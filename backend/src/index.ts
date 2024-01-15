@@ -1,9 +1,9 @@
 import express, { Express, Request, Response } from 'express';
 import morgan from 'morgan';
 import WebSocket from 'ws';
-import router from './routes';
+import imageRouter from './routes/images';
+import messageRouter from './routes/messages';
 import path from 'path';
-import { Console } from 'console';
 
 const app: Express = express();
 const wss = new WebSocket.Server({ port: parseInt(process.env.WEBSOCKET_PORT || '3001', 10) });
@@ -15,7 +15,8 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 // Routes
-app.use('/api', router);
+app.use('/api/images', imageRouter);
+app.use('/api/messages', messageRouter);
 
 // Serve static files first
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));

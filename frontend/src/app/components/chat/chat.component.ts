@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
-import { GeneralService } from '../../services/general/general.service';
 import { NgForm } from '@angular/forms';
 import { Auth, updateProfile } from '@angular/fire/auth';
-import { BehaviorSubject, last } from 'rxjs';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faEllipsisV, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { Message } from '../../interfaces/message';
 import { WebsocketService } from '../../services/websocket/websocket.service';
 import { ChatService } from '../../services/chat/chat.service';
+import { ImagesService } from '../../services/images/images.service';
+import { MessagesService } from '../../services/messages/messages.service';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 
 @Component({
   selector: 'app-chat',
@@ -14,17 +15,20 @@ import { ChatService } from '../../services/chat/chat.service';
   styleUrls: ['./chat.component.css']
 })
 export class ChatComponent {
-  currentUserUid: string = '';
+  currentUserUID: string = '';
   private messagesListSubject = new BehaviorSubject<Message[]>([]);
   messagesList$ = this.messagesListSubject.asObservable();
 
   faUser = faUser;
+  faEllipsisV = faEllipsisV;
+  faPaperPlane = faPaperPlane;
+
   messages: Message[] = [];
   newMessage: string = '';
 
-  constructor(private auth: Auth, private generalService: GeneralService, private websocketService: WebsocketService, private chatService: ChatService) {
+  constructor(private auth: Auth, private imagesService: ImagesService, private messagesService: MessagesService, private websocketService: WebsocketService, private chatService: ChatService) {
     this.messages = [];
-    this.currentUserUid = this.auth.currentUser?.uid || '';
+    this.currentUserUID = this.auth.currentUser?.uid || '';
     this.getMessages(); // Fetch initial messages
   }
 
@@ -40,7 +44,7 @@ export class ChatComponent {
 
   async getMessages(): Promise<void> {
     try {
-      const messages = await this.generalService.getMessages(0, 100);
+      const messages = await this.messagesService.getMessages(0, 100);
       this.messages = messages;
       this.messagesListSubject.next(this.messages);
     } catch (error) {
@@ -66,9 +70,9 @@ export class ChatComponent {
     let photoURL = user.photoURL || null;
 
     try {
-      const res: boolean = await this.generalService.checkImageExists(user.photoURL);
+      const res: boolean = await this.imagesService.checkImageExists(user.photoURL);
       if (!res) {
-        photoURL = await this.generalService.downloadProfilePicture(user.email || null);
+        photoURL = await this.imagesService.downloadProfilePicture(user.email || null);
         await updateProfile(user, { photoURL: photoURL });
       }
     } catch (error) {
@@ -81,7 +85,8 @@ export class ChatComponent {
     const showAvatar = uid !== lastMessage?.uid || timestamp - lastMessage?.timestamp > 300000;
     const showTimestamp = !showAvatar;
 
-    const message = {
+    const message: Message = {
+      message_id: null,
       uid: uid,
       displayName: displayName,
       photoURL: photoURL,
@@ -92,10 +97,13 @@ export class ChatComponent {
     };
 
     this.messages.push(message);
+    this.limitMessageArraySize();
     this.messagesListSubject.next(this.messages);
 
     try {
-      await this.generalService.sendMessage(message);
+      const message_id = await this.messagesService.sendMessage(message);
+      this.messages[this.messages.length - 1].message_id = message_id;
+      this.messagesListSubject.next(this.messages);
 
       const type = 'message';
       this.websocketService.sendMessage(type, message);
@@ -107,27 +115,17 @@ export class ChatComponent {
 
   private async getLatestMessage(): Promise<void> {
     try {
-      const currentMessage = (this.messages.length > 0 ? this.messages[this.messages.length - 1] : null)
-      const messages = await this.generalService.getMessages(this.messages.length + 1, this.messages.length + 1);
-      if (messages.length === 0) {
-        return;
-      }
+      const messages = await this.messagesService.getMessages(this.messages.length - 10, this.messages.length + 10) //-10 +10 to get more messages than the last message in the list
+      this.messages = this.messages.concat(messages);
 
-      const lastMessage = messages[0];
-      const showAvatar = currentMessage?.uid !== lastMessage.uid || lastMessage.timestamp - currentMessage?.timestamp > 300000;
-      const showTimestamp = !showAvatar;
+      this.messages=this.messages.filter((message, index, self) =>
+        index === self.findIndex((m) => (
+          m.message_id === message.message_id
+        ))
+      );
 
-      const message = {
-        uid: lastMessage.uid,
-        displayName: lastMessage.displayName,
-        photoURL: lastMessage.photoURL,
-        timestamp: lastMessage.timestamp,
-        message: lastMessage.message,
-        showAvatar: showAvatar,
-        showTimestamp: showTimestamp,
-      };
-
-      this.messages.push(message);
+      this.messages = this.messages.sort((a, b) => a.timestamp - b.timestamp);
+      this.limitMessageArraySize();
       this.messagesListSubject.next(this.messages);
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -147,5 +145,12 @@ export class ChatComponent {
       const type = 'register';
       this.websocketService.sendRegistrationMessage(type, userData);
     }
+  }
+
+  private limitMessageArraySize(): void {
+    const maxMessages = 100;
+    if(this.messages.length <= maxMessages) return;
+
+    this.messages = this.messages.slice(-maxMessages);
   }
 }

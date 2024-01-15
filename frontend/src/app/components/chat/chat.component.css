@@ -93,9 +93,9 @@
   background-color: #36393f; /* Darken the container on hover */
 }
 
-.timestamp {
-  font-size: 0.8em;
-  margin-top: -2px; /* Adjust the spacing as needed */
+.other-user-message .timestamp,
+.my-message .timestamp {
+  margin-top: 3px; /* Adjust the spacing as needed */
   opacity: 0; /* Hide timestamp by default */
   transition: opacity 0.3s ease; /* Add transition for opacity */
 }
@@ -103,4 +103,75 @@
 .other-user-message:hover .timestamp,
 .my-message:hover .timestamp {
   opacity: 1; /* Show timestamp on hover */
+}
+
+.message-container{
+  position:relative;
+}
+
+.message-actions{
+  position:absolute;
+  top:5px;
+  right:5px;
+  opacity:0;
+}
+
+.message-container:hover .message-actions{
+  opacity:1;
+}
+
+.new-message-input:before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: rgb(33,37,41);
+  opacity: 0.6;
+}
+
+.new-message-input {
+  padding: 10px;
+  padding-bottom: 25px;
+  background-color: rgb(33,37,41);
+  border: none;
+  color: white;
+  font-size: 1em;
+  resize: none;
+  outline: none;
+  width: 100%;
+  height: 100%;
+  margin-top: 25px;
+}
+
+.new-message-input::-webkit-input-placeholder {
+  color: white;
+}
+
+.new-message-input:after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: rgb(13, 110, 253);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.new-message-input + fa-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  color: rgb(13, 110, 253);
+  fill: rgb(13, 110, 253);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.new-message-input + fa-icon:hover {
+  color: white;
+  fill: white;
 }

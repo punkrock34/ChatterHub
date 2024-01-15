@@ -1,4 +1,5 @@
 export interface Message {
+  message_id: number|null;
   uid: any;
   displayName: string;
   photoURL: string | null;

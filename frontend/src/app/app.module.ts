@@ -8,8 +8,6 @@ import { AuthComponent } from './components/auth/auth.component';
 import { ChatComponent } from './components/chat/chat.component';
 
 import { HttpClientModule } from '@angular/common/http';
-import { AuthService } from './services/auth/auth.service';
-import { GeneralService } from './services/general/general.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { FormsModule } from '@angular/forms';
@@ -28,6 +26,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+
+import { AuthService } from './services/auth/auth.service';
+import { MessagesService } from './services/messages/messages.service';
+import { ImagesService } from './services/images/images.service';
+import { ChatService } from './services/chat/chat.service';
+import { WebsocketService } from './services/websocket/websocket.service';
 
 @NgModule({
   declarations: [
@@ -53,7 +57,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     MatProgressSpinnerModule,
     MatSnackBarModule
   ],
-  providers: [AuthService, GeneralService],
+  providers: [AuthService, MessagesService, ImagesService, ChatService, WebsocketService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
