@@ -122,7 +122,7 @@ export class ChatComponent {
 
       this.messages.filter((message, index, self) =>
         index === self.findIndex((m) => (
-          m.message_id === message.message_id
+          m.uid === message.uid && m.timestamp === message.timestamp
         ))
       )
 
