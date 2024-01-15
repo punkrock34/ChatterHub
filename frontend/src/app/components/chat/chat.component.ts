@@ -115,16 +115,15 @@ export class ChatComponent {
 
   private async getLatestMessage(): Promise<void> {
     try {
-      const messages = await this.messagesService.getMessages(this.messages.length - 10, this.messages.length + 10) //-10 +10 to get more messages than the last message in the list
-      console.log(messages)
-      this.messages = this.messages.concat(messages);
-      console.log(this.messages)
+      const messages = await this.messagesService.getMessages(this.messages.length - 10, this.messages.length + 10);
 
-      this.messages.filter((message, index, self) =>
+      this.messages = this.messages.concat(messages);
+
+      this.messages = this.messages.filter((message, index, self) =>
         index === self.findIndex((m) => (
           m.uid === message.uid && m.timestamp === message.timestamp
         ))
-      )
+      );
 
       this.messages = this.messages.sort((a, b) => a.timestamp - b.timestamp);
       this.limitMessageArraySize();
@@ -133,6 +132,8 @@ export class ChatComponent {
       console.error('Error fetching messages:', error);
     }
   }
+
+
 
   private registerUserWithWebSocket(): void {
     const user = this.auth.currentUser;
