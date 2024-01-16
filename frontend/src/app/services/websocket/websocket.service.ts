@@ -17,6 +17,7 @@ export class WebsocketService {
 
     this.socket$.subscribe({
       next: (message) => {
+
         if (message.type === 'notification') {
           if (message.welcome && this.sentWelcomeMessage) {
             return;
@@ -29,8 +30,10 @@ export class WebsocketService {
           } else {
             this.snackBar.open(message.message, 'Close', { duration: 5000 });
           }
-        }else if (message.type === 'message') {
-          this.chatService.triggerRefresh();
+        } else if (message.type === 'message') {
+          this.chatService.triggerMessageReceived();
+        } else if (message.type === 'delete') {
+          this.chatService.triggerMessageDeleted(message.message_id);
         }
       },
       error: (err) => console.error('Error: ', err),

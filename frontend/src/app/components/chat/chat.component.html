@@ -35,7 +35,7 @@
             </button>
             <div ngbDropdownMenu class="dropdown-menu dropdown-menu-right" aria-labelledby="messageActionsDropdown">
               <button class="dropdown-item" type="button" *ngIf="message.uid === currentUserUID">Edit</button>
-              <button class="dropdown-item" type="button" *ngIf="message.uid === currentUserUID">Delete</button>
+              <button class="dropdown-item" type="button" *ngIf="message.uid === currentUserUID" (click)="deleteMessage(message)">Delete</button>
               <button class="dropdown-item" type="button">Reply</button>
             </div>
           </div>

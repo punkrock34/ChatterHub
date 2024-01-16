@@ -26,18 +26,24 @@ wss.on('connection', (ws: WebSocket) => {
 
     // Handle messages from clients
     ws.on('message', (message: any) => {
-        const parsedMessage = JSON.parse(message);
-
-        switch (parsedMessage.type) {
+        const { type, user: user, message: msg } = JSON.parse(message);
+        
+        switch (type) {
         case 'register':
-            console.log(`User registered: ${parsedMessage.user.displayName}`);
+            console.log(`User registered: ${user.displayName}`);
             break;
         
         case 'message':
-            handleMessage(ws, parsedMessage.message);
+            handleMessage(ws, msg.message_id);
+            break;
+        case 'delete':
+            handleMessageDelete(ws, msg.message_id);
+            break;
+        case 'update':
+            handleMessageUpdate(ws, msg.message_id, msg.message, msg.showAvatar, msg.showTimestamp);
             break;
         default:
-            console.error(`Unknown message type: ${parsedMessage.type}`);
+            console.error(`Unknown message type: ${type}`);
             break;
         }
     });
@@ -61,6 +67,31 @@ function handleMessage(ws: WebSocket, message: any): void {
             client.send(JSON.stringify({
                 type: 'message',
                 message: message
+            }));
+        };
+    });
+}
+
+function handleMessageDelete(ws: WebSocket, message_id: number): void {
+    wss.clients.forEach((client) => {
+        if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+                type: 'delete',
+                message_id: message_id
+            }));
+        };
+    });
+}
+
+function handleMessageUpdate(ws: WebSocket, message_id: number, message: string, showAvatar: boolean, showTimestamp: boolean): void {
+    wss.clients.forEach((client) => {
+        if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+                type: 'update',
+                message_id: message_id,
+                message: message,
+                showAvatar: showAvatar,
+                showTimestamp: showTimestamp
             }));
         };
     });

@@ -34,7 +34,7 @@ router.use('/download-image', async (req: Request, res: Response) => {
             fileStream.on('finish', () => {
                 fileStream.close();
                 console.log('Saved to', imagePath);
-                res.json({ imagePath });
+                res.status(200).json({ imagePath: imagePath });
             });
         }).on('error', (error) => {
             fs.unlinkSync(imagePath); // Remove the file if an error occurs
