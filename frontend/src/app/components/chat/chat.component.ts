@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Auth, updateProfile } from '@angular/fire/auth';
-import { faUser, faEllipsisV, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faEllipsisV, faPaperPlane, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { Message, MessageAction } from '../../interfaces/message';
 import { WebsocketService } from '../../services/websocket/websocket.service';
 import { ChatService } from '../../services/chat/chat.service';
@@ -19,9 +19,12 @@ export class ChatComponent {
   private messagesListSubject = new BehaviorSubject<Message[]>([]);
   messagesList$ = this.messagesListSubject.asObservable();
 
+  editingMessage: Message | null = null;
+
   faUser = faUser;
   faEllipsisV = faEllipsisV;
   faPaperPlane = faPaperPlane;
+  faTimesCircle = faTimesCircle;
 
   messages: Message[] = [];
   newMessage: string = '';
@@ -123,12 +126,13 @@ export class ChatComponent {
     try {
       const message_id = await this.messagesService.sendMessage(message);
       message.message_id = message_id;
-      this.messages.push(message);
-      this.limitMessageArraySize();
-      this.messagesListSubject.next(this.messages);
 
       const type = 'message';
       this.websocketService.sendMessage(type, message);
+
+      this.messages.push(message);
+      this.limitMessageArraySize();
+      this.messagesListSubject.next(this.messages);
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -139,36 +143,73 @@ export class ChatComponent {
     try {
       const index = this.messages.findIndex((m) => m.message_id === message.message_id);
 
-      if(index === -1) throw new Error('Message not found.');
+      if (index === -1) {
+        throw new Error('Message not found.');
+      }
 
-      const previousMessage = index - 1;
-      const nextMessage = index + 1;
-      let updatedMessageIndex = -1;
+      const previousMessage = this.messages[index - 1];
+      const nextMessage = this.messages[index + 1];
+      let updatedMessage: Message | null = null;
 
-      if(message.showAvatar){
-        if (this.messages[previousMessage]?.uid === message.uid && this.messages[previousMessage]?.timestamp - message.timestamp < 300000) {
-          this.messages[previousMessage].showAvatar = true;
-          this.messages[previousMessage].showTimestamp = false;
-          updatedMessageIndex = previousMessage;
-        }else if (this.messages[nextMessage]?.uid === message.uid && message.timestamp - this.messages[nextMessage]?.timestamp < 300000) {
-          this.messages[nextMessage].showAvatar = true;
-          this.messages[nextMessage].showTimestamp = false;
-          updatedMessageIndex = nextMessage;
+      if (message.showAvatar) {
+        if (previousMessage?.uid === message.uid && previousMessage?.timestamp - message.timestamp < 300000) {
+          previousMessage.showAvatar = true;
+          previousMessage.showTimestamp = false;
+          updatedMessage = previousMessage;
+        } else if (nextMessage?.uid === message.uid && message.timestamp - nextMessage?.timestamp < 300000) {
+          nextMessage.showAvatar = true;
+          nextMessage.showTimestamp = false;
+          updatedMessage = nextMessage;
         }
       }
 
-      await this.messagesService.deleteMessage(message.message_id!);
-
-      if(updatedMessageIndex !== -1) await this.messagesService.updateMessage(this.messages[updatedMessageIndex].message_id!, this.messages[updatedMessageIndex].message, this.messages[updatedMessageIndex].showAvatar!, this.messages[updatedMessageIndex].showTimestamp!);
+      const currentMessageId = message.message_id;
 
       this.messages.splice(index, 1);
       this.messagesListSubject.next(this.messages);
 
-      this.websocketService.sendMessage('delete', message);
-      if(updatedMessageIndex !== -1) this.websocketService.sendMessage('update', this.messages[updatedMessageIndex]);
+      await this.messagesService.deleteMessage(currentMessageId!);
 
+      if (updatedMessage !== null) {
+        await this.messagesService.updateMessage(updatedMessage.message_id!, updatedMessage.message, updatedMessage.showAvatar!,updatedMessage.showTimestamp!);
+        this.websocketService.sendMessage('update', updatedMessage);
+      }
+
+      this.websocketService.sendMessage('delete', message);
     } catch (error) {
       console.error('Error deleting message:', error);
+    }
+  }
+
+  startEditing(message: Message): void {
+    this.editingMessage = { ...message };
+  }
+
+  cancelEditing(): void {
+    this.editingMessage = null;
+  }
+
+  async updateMessage(message: Message): Promise<void> {
+    try {
+      const index = this.messages.findIndex((m) => m.message_id === message.message_id);
+
+      if (index === -1) {
+        throw new Error('Message not found.');
+      }
+
+      if(message.message === null || message.message.trim().length === 0){
+        throw new Error('Message cannot be empty.');
+      }
+
+      this.messages[index].message = message.message;
+
+      await this.messagesService.updateMessage(message.message_id!, message.message, message.showAvatar!, message.showTimestamp!);
+      this.websocketService.sendMessage('update', message);
+
+      this.editingMessage = null;
+
+    } catch (error) {
+      console.error('Error updating message:', error);
     }
   }
 

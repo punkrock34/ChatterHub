@@ -34,6 +34,8 @@ export class WebsocketService {
           this.chatService.triggerMessageReceived();
         } else if (message.type === 'delete') {
           this.chatService.triggerMessageDeleted(message.message_id);
+        } else if (message.type === 'update') {
+          this.chatService.triggerMessageUpdated(message.message_id, message.message, message.showAvatar, message.showTimestamp);
         }
       },
       error: (err) => console.error('Error: ', err),

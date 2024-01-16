@@ -19,7 +19,6 @@ export class ChatService {
   }
 
   triggerMessageUpdated(message_id: number, message: string, showAvatar: boolean, showTimestamp: boolean): void {
-    console.log('Triggering message updated:', message_id, message, showAvatar, showTimestamp);
     this.newMessageActionSubject.next({ type: 'update', message_id: message_id, message: message, showAvatar: showAvatar, showTimestamp: showTimestamp });
   }
 }

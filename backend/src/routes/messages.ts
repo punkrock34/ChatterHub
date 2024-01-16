@@ -72,7 +72,7 @@ router.use('/get-messages', async (req: Request, res: Response) => {
         const messagesFromDb = result.rows;
 
         if (messagesFromDb === undefined || messagesFromDb.length === 0) {
-            res.status(205).json({ messages: [] });
+            res.status(200).json({ messages: [] });
             return;
         }
 

@@ -41,7 +41,6 @@ export class MessagesService {
 
   async updateMessage(message_id: number, message: string, showAvatar: boolean, showTimestamp:boolean): Promise<number> {
     try {
-      console.log("Updating message:", message);
       return await lastValueFrom(this.http.post<number>("/api/messages/update-message", { message_id, message, showAvatar, showTimestamp }));
     } catch (error) {
       console.error('Error updating message:', error);

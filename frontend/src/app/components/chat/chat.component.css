@@ -51,7 +51,8 @@
 .message-content{
   border-radius: 5px;
   margin-right: 10px;
-  max-width: 90%;
+  width: 100%;
+  max-width: 70%;
   word-wrap: break-word;
   position: relative;
 }
@@ -178,3 +179,57 @@
   color: white;
   fill: white;
 }
+
+.cancel-edit-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: white;
+  fill: white;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.edit-message-input {
+  padding: 10px;
+  background-color: rgb(33,37,41);
+  border: none;
+  color: white;
+  font-size: 1em;
+  resize: none;
+  outline: none;
+  width: 100%;
+  height: 100%;
+}
+
+.edit-message-input::-webkit-input-placeholder {
+  color: white;
+}
+
+.edit-message-input:after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: rgb(13, 110, 253);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.edit-message-input + fa-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  color: rgb(13, 110, 253);
+  fill: rgb(13, 110, 253);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.edit-message-input + fa-icon:hover {
+  color: white;
+  fill: white;
+}
+

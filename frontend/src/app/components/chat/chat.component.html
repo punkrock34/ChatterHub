@@ -2,16 +2,20 @@
   <div class="px-3 w-100 chat-messages">
     <div class="messages-container">
       <div *ngFor="let message of messagesList$ | async" class="message-container">
-        <div *ngIf="!message.showAvatar && message.uid !== 'currentUserUID'" class="other-user-message">
+        <div *ngIf="!message.showAvatar && message.uid !== currentUserUID" class="other-user-message">
           <div *ngIf="!message.showAvatar && message.showTimestamp" class="timestamp">{{ message.timestamp | date: 'shortTime' }}</div>
           <div class="message-content">
             <div class="message-text">{{ message.message }}</div>
           </div>
         </div>
-        <div *ngIf="!message.showAvatar && message.uid === 'currentUserUID'" class="my-message">
+        <div *ngIf="!message.showAvatar && message.uid === currentUserUID" class="my-message">
           <div *ngIf="!message.showAvatar && message.showTimestamp" class="timestamp">{{ message.timestamp | date: 'shortTime' }}</div>
-          <div class="message-content">
+          <div class="message-content" *ngIf="editingMessage === null || editingMessage.message_id !== message.message_id">
             <div class="message-text">{{ message.message }}</div>
+          </div>
+          <div class="message-content" *ngIf="editingMessage !== null && editingMessage.message_id === message.message_id">
+            <input [(ngModel)]="editingMessage.message" class="form-control edit-message-input" (keydown.enter)="updateMessage(editingMessage)" (keydown.escape)="cancelEditing()" />
+            <fa-icon [icon]="faPaperPlane" class="send-message-icon" (click)="updateMessage(editingMessage)"></fa-icon>
           </div>
         </div>
         <div *ngIf="message.showAvatar" class="message-with-avatar">
@@ -24,19 +28,23 @@
               <div class="username">{{ message.displayName }}</div>
               <div class="timestamp">{{ message.timestamp | timestampFormat }}</div>
             </div>
-            <div class="message-text">{{ message.message }}</div>
+            <div class="message-text" *ngIf="editingMessage === null || editingMessage.message_id !== message.message_id">{{ message.message }}</div>
+            <div class="message-text" *ngIf="editingMessage !== null && editingMessage.message_id === message.message_id">
+              <input [(ngModel)]="editingMessage.message" class="form-control edit-message-input" (keydown.enter)="updateMessage(editingMessage)" (keydown.escape)="cancelEditing()" />
+              <fa-icon [icon]="faPaperPlane" class="send-message-icon" (click)="updateMessage(editingMessage)"></fa-icon>
+            </div>
           </div>
         </div>
 
-        <div class="message-actions">
+        <div class="message-actions" *ngIf="message.uid === currentUserUID && (editingMessage === null || editingMessage.message_id === message.message_id)">
           <div class="dropdown" ngbDropdown>
             <button ngbDropdownToggle class="btn btn-secondary dropdown-toggle" type="button" id="messageActionsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <fa-icon [icon]="faEllipsisV"></fa-icon>
             </button>
             <div ngbDropdownMenu class="dropdown-menu dropdown-menu-right" aria-labelledby="messageActionsDropdown">
-              <button class="dropdown-item" type="button" *ngIf="message.uid === currentUserUID">Edit</button>
-              <button class="dropdown-item" type="button" *ngIf="message.uid === currentUserUID" (click)="deleteMessage(message)">Delete</button>
-              <button class="dropdown-item" type="button">Reply</button>
+              <button class="dropdown-item" type="button" (click)="startEditing(message)" *ngIf="editingMessage === null">Edit</button>
+              <button class="dropdown-item" type="button" (click)="cancelEditing()" *ngIf="editingMessage !== null">Cancel</button>
+              <button class="dropdown-item" type="button" (click)="deleteMessage(message)">Delete</button>
             </div>
           </div>
         </div>

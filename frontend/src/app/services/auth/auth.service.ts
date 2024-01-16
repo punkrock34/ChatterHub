@@ -100,5 +100,4 @@ export class AuthService {
     return this.isLoggedInSubject.value;
   }
 
-  // Add more methods as needed for authentication (login, logout, etc.)
 }
