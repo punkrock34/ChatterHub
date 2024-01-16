@@ -1,12 +1,12 @@
 import express, { Express, Request, Response } from 'express';
 import morgan from 'morgan';
 import WebSocket from 'ws';
+import { wss, handleMessage, handleMessageDelete, handleMessageUpdate } from './websocket';
 import imageRouter from './routes/images';
 import messageRouter from './routes/messages';
 import path from 'path';
 
 const app: Express = express();
-const wss = new WebSocket.Server({ port: parseInt(process.env.WEBSOCKET_PORT || '3001', 10) });
 
 // Log requests
 app.use(morgan('dev'));
@@ -60,42 +60,6 @@ wss.on('connection', (ws: WebSocket) => {
     // Send a welcome message to the client
     ws.send(JSON.stringify({"type": "notification", "message": "Welcome to the chat!", "welcome": true}));
 });
-
-function handleMessage(ws: WebSocket, message: any): void {
-    wss.clients.forEach((client) => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-                type: 'message',
-                message: message
-            }));
-        };
-    });
-}
-
-function handleMessageDelete(ws: WebSocket, message_id: number): void {
-    wss.clients.forEach((client) => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-                type: 'delete',
-                message_id: message_id
-            }));
-        };
-    });
-}
-
-function handleMessageUpdate(ws: WebSocket, message_id: number, message: string, showAvatar: boolean, showTimestamp: boolean): void {
-    wss.clients.forEach((client) => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-                type: 'update',
-                message_id: message_id,
-                message: message,
-                showAvatar: showAvatar,
-                showTimestamp: showTimestamp
-            }));
-        };
-    });
-}
 
 // Other routes or middleware...
 app.use('/', (req: Request, res: Response) => {
