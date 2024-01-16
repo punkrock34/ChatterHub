@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  oracle-db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "1521:1521"
+    environment:
+      - ORACLE_PDB=chatterhub
+      - ORACLE_PASSWORD=olDXgfmHPkOyRiqZEJKjKLPTDX0S20
+      - ORACLE_CHARACTERSET=AL32UTF8
